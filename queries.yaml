@@ -1,0 +1,6 @@
+pg_cache_hit:
+  query: "SELECT sum(heap_blks_hit) / sum(heap_blks_read) as ratio FROM pg_statio_user_tables;"
+  metrics:
+    - ratio:
+        usage: "GAUGE"
+        description: "Ratio of heap blocks hit to heap blocks read"
