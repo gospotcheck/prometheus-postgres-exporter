@@ -4,3 +4,10 @@ pg_cache_hit:
     - ratio:
         usage: "GAUGE"
         description: "Ratio of heap blocks hit to heap blocks read"
+
+pg_replication:
+  query: "SELECT extract(epoch from now() - pg_last_xact_replay_timestamp()) as delay_in_sec;"
+  metrics:
+    - delay_in_sec:
+        usage: "GAUGE"
+        description: "Seconds behind primary in commits"
