@@ -13,8 +13,8 @@ pg_replication:
         description: "Seconds behind primary in commits"
 
 pg_transactions:
-  query: "SELECT sum(xact_commit+xact_rollback) as num_transactions FROM pg_stat_database;"
+  query: "SELECT sum(xact_commit+xact_rollback) as count FROM pg_stat_database;"
   metrics:
-    - num_transactions:
-        usage: "GAUGE"
-        description: "Number of transactions at time of query"    
+    - count:
+        usage: "COUNTER"
+        description: "Number of total transactions at time of query"    
