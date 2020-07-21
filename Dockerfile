@@ -1,4 +1,4 @@
-FROM alpine:3.10.3
+FROM alpine:3.12.0
 
 RUN apk add --update wget ca-certificates
 
