@@ -11,3 +11,10 @@ pg_replication:
     - delay_in_sec:
         usage: "GAUGE"
         description: "Seconds behind primary in commits"
+
+pg_transactions:
+  query: "SELECT sum(xact_commit+xact_rollback) as count, extract(epoch from now())*1000 as ts FROM pg_stat_database;"
+  metrics:
+    - num_transactions:
+        usage: "GAUGE"
+        description: "Number of transactions at time of query"    
