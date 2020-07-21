@@ -2,9 +2,9 @@ FROM alpine:3.10.3
 
 RUN apk add --update wget ca-certificates
 
-RUN wget https://github.com/wrouesnel/postgres_exporter/releases/download/v0.7.0/postgres_exporter_v0.7.0_linux-amd64.tar.gz && \
-  tar -zxvf /postgres_exporter_v0.7.0_linux-amd64.tar.gz && \
-  mv /postgres_exporter_v0.7.0_linux-amd64/postgres_exporter /postgres_exporter && \
+RUN wget https://github.com/wrouesnel/postgres_exporter/releases/download/v0.8.0/postgres_exporter_v0.8.0_linux-amd64.tar.gz && \
+  tar -zxvf /postgres_exporter_v0.8.0_linux-amd64.tar.gz && \
+  mv /postgres_exporter_v0.8.0_linux-amd64/postgres_exporter /postgres_exporter && \
   chmod +x /postgres_exporter
 
 COPY queries.yaml /etc/queries.yaml
