@@ -18,3 +18,11 @@ pg_transactions:
     - count:
         usage: "COUNTER"
         description: "Number of total transactions at time of query"    
+
+pg_postmaster:
+  query: "SELECT pg_postmaster_start_time as start_time_seconds from pg_postmaster_start_time()"
+  master: true
+  metrics:
+    - start_time_seconds:
+        usage: "GAUGE"
+        description: "Time at which postmaster started"
