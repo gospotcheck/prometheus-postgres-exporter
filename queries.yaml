@@ -38,3 +38,32 @@ pg_database:
     - size_bytes:
         usage: "GAUGE"
         description: "Disk space used by the database"
+
+pg_top_queries_by_elapsed_time:
+  master: true
+  query: |
+    SELECT 
+      statement_timestamp() - query_start elapsed,
+      pid,
+      query
+    FROM 
+      pg_stat_activity
+    WHERE NOT 
+      lower(query) LIKE '%pg_stat_activity%'
+    AND NOT 
+      lower(query) LIKE 'set local%'
+    AND 
+      (state != 'idle')
+    AND 
+      query !=''
+    ORDER BY statement_timestamp() - query_start DESC;
+  metrics:
+    - elapsed:
+        usage: "GUAGE"
+        description: "Estimated time that query is running"
+    - pid:
+        usage: "LABEL"
+        description: "PID of query"
+    - query:
+        usage: "LABEL"
+        description: "Query"
