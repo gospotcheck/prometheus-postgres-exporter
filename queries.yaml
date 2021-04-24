@@ -40,7 +40,6 @@ pg_database:
         description: "Disk space used by the database"
 
 pg_top_queries_by_elapsed_time:
-  master: true
   query: |
     SELECT 
       statement_timestamp() - query_start elapsed,
