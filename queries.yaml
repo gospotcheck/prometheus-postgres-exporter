@@ -55,7 +55,7 @@ pg_top_queries_by_elapsed_time:
       (state != 'idle')
     AND 
       query !=''
-    ORDER BY statement_timestamp() - query_start DESC;
+    ORDER BY statement_timestamp() - query_start DESC
   metrics:
     - elapsed:
         usage: "GUAGE"
