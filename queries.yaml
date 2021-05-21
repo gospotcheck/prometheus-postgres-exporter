@@ -40,7 +40,17 @@ pg_database:
         description: "Disk space used by the database"
 
 pg_stat_user_tables:
-  query: "SELECT current_database() datname, relname FROM pg_stat_user_tables"
+  query: |
+   SELECT
+     current_database() datname,
+     relname,
+     n_tup_ins,
+     n_tup_upd,
+     n_tup_del,
+     n_live_tup,
+     n_dead_tup
+   FROM 
+     pg_stat_user_tables
   metrics:
     - datname:
         usage: "LABEL"
@@ -48,3 +58,18 @@ pg_stat_user_tables:
     - relname:
         usage: "LABEL"
         description: "Name of this table"
+    - n_tup_ins:
+        usage: "COUNTER"
+        description: "Number of rows inserted"
+    - n_tup_upd:
+        usage: "COUNTER"
+        description: "Number of rows updated"
+    - n_tup_del:
+        usage: "COUNTER"
+        description: "Number of rows deleted"
+    - n_live_tup:
+        usage: "GAUGE"
+        description: "Estimated number of live rows"
+    - n_dead_tup:
+        usage: "GAUGE"
+        description: "Estimated number of dead rows"
