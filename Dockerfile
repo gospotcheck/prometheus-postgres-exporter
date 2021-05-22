@@ -11,4 +11,5 @@ COPY queries.yaml /etc/queries.yaml
 
 RUN chmod 0444 /etc/queries.yaml
 
-CMD /postgres_exporter --extend.query-path /etc/queries.yaml
+CMD /postgres_exporter --extend.query-path /etc/queries.yaml --log.level debug --exclude-databases template0,template1,postgres
+
