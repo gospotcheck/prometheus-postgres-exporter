@@ -60,6 +60,7 @@ pg_stat_user_tables:
      autoanalyze_count 
    FROM 
      pg_stat_user_tables
+   WHERE NOT schemaname='gsc_toolkit'
   metrics:
     - datname:
         usage: "LABEL"
