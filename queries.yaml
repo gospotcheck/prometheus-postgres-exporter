@@ -43,8 +43,7 @@ pg_stat_user_tables:
   query: |
    SELECT
      current_database() datname,
-     schemaname,
-     relname,
+     concat(schemaname, '.' ,relname) relname,
      n_tup_ins,
      n_tup_upd,
      n_tup_del,
@@ -65,9 +64,6 @@ pg_stat_user_tables:
     - datname:
         usage: "LABEL"
         description: "Name of current database"
-    - schemaname:
-        usage: "LABEL"
-        description: "Name of schema"
     - relname:
         usage: "LABEL"
         description: "Name of this table"
