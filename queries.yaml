@@ -43,7 +43,7 @@ pg_stat_user_tables:
   query: |
    SELECT
      current_database() datname,
-     concat(schemaname, '.' ,relname) relname,
+     relname,
      n_tup_ins,
      n_tup_upd,
      n_tup_del,
@@ -60,7 +60,7 @@ pg_stat_user_tables:
      autoanalyze_count 
    FROM 
      pg_stat_user_tables
-   WHERE NOT schemaname='gsc_toolkit'
+   WHERE NOT relname='downloads'
   metrics:
     - datname:
         usage: "LABEL"
