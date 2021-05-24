@@ -136,22 +136,32 @@ pg_stat_user_tables:
 
 pg_top_queries_by_elapsed_time:
   query: |
-    SELECT 
-      current_database() datname,
+    WITH
+      top AS (
+        SELECT 
+          current_database() datname,
+          pid,
+          query,
+          statement_timestamp() - query_start elapsed_time
+        FROM 
+          pg_stat_activity
+        WHERE NOT 
+          lower(query) LIKE '%pg_stat_activity%'
+        AND NOT 
+          lower(query) LIKE 'set local%'
+        AND 
+          (state != 'idle')
+        AND 
+          query !=''
+        ORDER BY statement_timestamp() - query_start DESC
+      )
+    SELECT
+      datname,
       pid,
       query,
-      statement_timestamp() - query_start elapsed_time
-    FROM 
-      pg_stat_activity
-    WHERE NOT 
-      lower(query) LIKE '%pg_stat_activity%'
-    AND NOT 
-      lower(query) LIKE 'set local%'
-    AND 
-      (state != 'idle')
-    AND 
-      query !=''
-    ORDER BY statement_timestamp() - query_start DESC
+      elapsed_time
+    FROM
+      top
   metrics:
     - datname:
         usage: "LABEL"
