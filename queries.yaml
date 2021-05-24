@@ -134,14 +134,14 @@ pg_stat_user_tables:
         usage: "COUNTER"
         description: "Number of times this table has been analyzed by the autovacuum daemon"
 
-pg_top_queries_by_elapsed_time:
+pg_top_queries_pid_by_elapsed_time:
   query: |
     WITH
       top AS (
         SELECT 
           datname,
           pid,
-          statement_timestamp() - query_start elapsed_time
+          EXTRACT(EPOCH FROM statement_timestamp() - query_start) elapsed_time
         FROM 
           postgres_exporter.pg_stat_activity
         WHERE NOT 
