@@ -133,3 +133,35 @@ pg_stat_user_tables:
     - autoanalyze_count:
         usage: "COUNTER"
         description: "Number of times this table has been analyzed by the autovacuum daemon"
+
+pg_top_queries_by_elapsed_time:
+  query: |
+    SELECT 
+      current_database() datname,
+      pid,
+      query,
+      statement_timestamp() - query_start elapsed_time
+    FROM 
+      pg_stat_activity
+    WHERE NOT 
+      lower(query) LIKE '%pg_stat_activity%'
+    AND NOT 
+      lower(query) LIKE 'set local%'
+    AND 
+      (state != 'idle')
+    AND 
+      query !=''
+    ORDER BY statement_timestamp() - query_start DESC
+  metrics:
+    - datname:
+        usage: "LABEL"
+        description: "Name of current database"
+    - pid:
+        usage: "LABEL"
+        description: "PID of query"
+    - query:
+        usage: "LABEL"
+        description: "Query"
+    - elapsed_time:
+        usage: "HISTOGRAM"
+        description: "Estimated time that query is running"
