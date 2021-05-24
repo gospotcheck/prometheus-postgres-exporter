@@ -144,7 +144,7 @@ pg_top_queries_by_elapsed_time:
           query,
           statement_timestamp() - query_start elapsed_time
         FROM 
-          pg_stat_activity
+          postgres_exporter.pg_stat_activity
         WHERE NOT 
           lower(query) LIKE '%pg_stat_activity%'
         AND NOT 
