@@ -159,7 +159,7 @@ pg_top_queries_pid_by_elapsed_time:
       datname,
       pid,
       short_query,
-      elapsed_time,
+      elapsed_time
     FROM
       top
   metrics:
