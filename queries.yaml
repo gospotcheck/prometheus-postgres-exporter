@@ -175,3 +175,14 @@ pg_top_queries_pid_by_elapsed_time:
     - elapsed_time:
         usage: "GAUGE"
         description: "Estimated time that query is running"
+
+pg_wal:
+  query: "SELECT count(*) wal_count, sum(size) size_bytes FROM postgres_exporter.pg_ls_waldir"
+  master: true
+  metrics:
+    - wal_count:
+        usage: "COUNTER"
+        description: "Number of the wal files"
+    - size_bytes:
+        usage: "GAUGE"
+        description: "Total disk space of wal used by the database"
