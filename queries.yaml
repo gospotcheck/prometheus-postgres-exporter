@@ -184,7 +184,7 @@ pg_wal:
   master: true
   metrics:
     - wal_count:
-        usage: "GUAGE"
+        usage: "GAUGE"
         description: "Number of the wal files"
     - size_bytes:
         usage: "GAUGE"
