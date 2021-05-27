@@ -28,7 +28,17 @@ pg_postmaster:
         description: "Time at which postmaster started"
 
 pg_database:
-  query: "SELECT pg_database.datname, pg_database_size(pg_database.datname) as size_bytes, age(datfrozenxid) as trx_frozen_id FROM postgres_exporter.pg_database where datname not in('postgres','template0','template1')"
+  query: |
+    SELECT 
+      pg_database.datname, 
+      pg_database_size(pg_database.datname) as size_bytes, 
+      age(datfrozenxid) as trx_frozen_id,
+      pg_stat_get_db_tuples_fetched(oid) db_reads, 
+      pg_stat_get_db_tuples_inserted(oid) + pg_stat_get_db_tuples_updated(oid) + pg_stat_get_db_tuples_deleted(oid) db_writes 
+    FROM 
+      postgres_exporter.pg_database 
+    WHERE 
+      datname NOT IN('postgres','template0','template1')
   master: true
   cache_seconds: 30
   metrics:
