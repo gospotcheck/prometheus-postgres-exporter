@@ -51,6 +51,12 @@ pg_database:
     - trx_frozen_id:
         usage: "GAUGE"
         description: "Age of oldest transaction ID"
+    - db_reads:
+        usage: "COUNTER"
+        description: "Number of database reads"
+    - db_writes:
+        usage: "COUNTER"
+        description: "Number of database writes"
 
 pg_stat_user_tables:
   query: |
