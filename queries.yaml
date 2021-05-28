@@ -210,7 +210,6 @@ pg_table:
   query: |
     SELECT 
       current_database() datname,
-      c.oid, 
       n.nspname AS schemaname, 
       c.relname AS relname, 
       pg_relation_size(c.oid) AS table_size, 
