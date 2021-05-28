@@ -205,3 +205,48 @@ pg_wal:
     - size_bytes:
         usage: "GAUGE"
         description: "Total disk space of wal used by the database"
+
+pg_table:
+  query: |
+    SELECT 
+      current_database() datname,
+      c.oid, 
+      n.nspname AS schemaname, 
+      c.relname AS relname, 
+      pg_relation_size(c.oid) AS table_size, 
+      pg_indexes_size(c.oid) AS index_size,
+      pg_total_relation_size(c.oid) AS total_size,
+      pg_total_relation_size(c.reltoastrelid) AS toast_size
+    FROM pg_class c
+    LEFT JOIN 
+      pg_namespace n 
+    ON 
+      n.oid = c.relnamespace
+    WHERE 
+      c.relkind = 'r'
+    AND 
+      n.nspname NOT IN('pg_catalog','information_schema')
+    ORDER BY 3;
+  metrics:
+    - datname:
+        usage: "LABEL"
+        description: "Name of current database"
+    - schemaname:
+        usage: "LABEL"
+        description: "Name of schema"
+    - relname:
+        usage: "LABEL"
+        description: "Name of table"
+    - table_size:
+        usage: "GAUGE"
+        description: "Disk space of table minus index used"
+    - index_size:
+        usage: "GAUGE"
+        description: "Total disk space of table index used"
+    - total_size:
+        usage: "GAUGE"
+        description: "Total disk space of table plus index used"
+    - toast_size:
+        usage: "GAUGE"
+        description: "Total disk space of the table's toast table plus index used"
+
