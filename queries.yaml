@@ -379,24 +379,18 @@ pg_table_bloat:
 pg_autovacuum_runtime:
   query: |
     SELECT 
-      psa.datname AS datname,
-      psut.schemaname AS schemaname,
-      psut.relname AS relname,
-      EXTRACT(EPOCH FROM statement_timestamp() - psa.xact_start) AS av_runtime
+      current_database() AS datname,
+      SPLIT_PART(REGEXP_REPLACE(query, '\w+\:\s?\w+\s?(\w+)\.(\w+).*', '\1.\2', 'g'), '.', 1) AS schemaname,
+      SPLIT_PART(REGEXP_REPLACE(query, '\w+\:\s?\w+\s?(\w+)\.(\w+).*', '\1.\2', 'g'), '.', 2) AS relname,
+      EXTRACT(EPOCH FROM statement_timestamp() - xact_start) AS av_runtime
     FROM 
-      postgres_exporter.pg_stat_activity psa
-    JOIN 
-      postgres_exporter.pg_stat_progress_vacuum pspv 
-      ON (psa.pid=pspv.pid)
-    JOIN 
-      pg_stat_user_tables psut 
-      ON (pspv.relid=psut.relid)
+      postgres_exporter.pg_stat_activity
     WHERE 
-      lower(psa.query) LIKE '%autovacuum%' 
+      lower(query) LIKE '%autovacuum:%' 
     AND 
-      psa.query 
+      query 
     NOT LIKE '%pg_stat_activity%'
-    ORDER BY 3,2
+    ORDER BY 4,3
   metrics:
     - datname:
         usage: "LABEL"
