@@ -475,3 +475,18 @@ pg_stat_statements:
     - blk_write_time_seconds:
         usage: "COUNTER"
         description: "Total time the statement spent writing blocks, in milliseconds (if track_io_timing is enabled, otherwise zero)"
+
+pg_slow:
+  query: |
+    SELECT datname,
+           COUNT(*) AS queries_count
+    FROM pg_stat_activity
+    WHERE state = 'active' AND (now() - query_start) > '2 seconds'::interval
+    GROUP BY 1
+  metrics:
+    - datname:
+        usage: "LABEL"
+        description: "Name of current database"
+    - queries_count:
+        usage: "GAUGE"
+        description: "Current number of slow queries over 2 seconds"
