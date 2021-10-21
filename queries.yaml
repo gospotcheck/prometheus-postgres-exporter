@@ -380,8 +380,8 @@ pg_autovacuum_runtime:
   query: |
     SELECT 
       current_database() AS datname,
-      SPLIT_PART(REGEXP_REPLACE(query, '\w+\:\s?\w+\s?(\w+)\.(\w+).*', '\1.\2', 'g'), '.', 1) AS schemaname,
-      SPLIT_PART(REGEXP_REPLACE(query, '\w+\:\s?\w+\s?(\w+)\.(\w+).*', '\1.\2', 'g'), '.', 2) AS relname,
+      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 3) AS schemaname,
+      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 4) AS relname,
       EXTRACT(EPOCH FROM statement_timestamp() - xact_start) AS av_runtime
     FROM 
       postgres_exporter.pg_stat_activity
@@ -496,8 +496,8 @@ pg_autovacuum_prevent_wraparound_runtime:
   query: |
     SELECT 
       current_database() AS datname,
-      SPLIT_PART(REGEXP_REPLACE(query, '\w+\:\s?\w+\s?(\w+)\.(\w+).*', '\1.\2', 'g'), '.', 1) AS schemaname,
-      SPLIT_PART(REGEXP_REPLACE(query, '\w+\:\s?\w+\s?(\w+)\.(\w+).*', '\1.\2', 'g'), '.', 2) AS relname,
+      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 3) AS schemaname,
+      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 4) AS relname,
       EXTRACT(EPOCH FROM statement_timestamp() - xact_start) AS av_runtime
     FROM 
       postgres_exporter.pg_stat_activity
@@ -519,5 +519,65 @@ pg_autovacuum_prevent_wraparound_runtime:
         usage: "LABEL"
         description: "Name of this table"
     - av_runtime:
+        usage: "GAUGE"
+        description: "Estimated Time for autovacuum to run"
+
+pg_vacuum_runtime:
+  query: |
+    SELECT 
+      current_database() AS datname,
+      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 3) AS schemaname,
+      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 4) AS relname,
+      EXTRACT(EPOCH FROM statement_timestamp() - xact_start) AS av_runtime
+    FROM 
+      postgres_exporter.pg_stat_activity
+    WHERE 
+      lower(query) LIKE '%vacuum%' 
+    AND 
+      lower(query) NOT LIKE '%autovacuum%'
+    AND
+      query NOT LIKE '%pg_stat_activity%'
+    ORDER BY 4,3
+  metrics:
+    - datname:
+        usage: "LABEL"
+        description: "Name of current database"
+    - schemaname:
+        usage: "LABEL"
+        description: "Name of the schema that this table is in"
+    - relname:
+        usage: "LABEL"
+        description: "Name of this table"
+    - runtime:
+        usage: "GAUGE"
+        description: "Estimated Time for autovacuum to run"
+
+pg_analyze_runtime:
+  query: |
+    SELECT 
+      current_database() AS datname,
+      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 3) AS schemaname,
+      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 4) AS relname,
+      EXTRACT(EPOCH FROM statement_timestamp() - xact_start) AS av_runtime
+    FROM 
+      postgres_exporter.pg_stat_activity
+    WHERE 
+      lower(query) LIKE '%vacuum%' 
+    AND 
+      lower(query) NOT LIKE '%autovacuum%'
+    AND
+      query NOT LIKE '%pg_stat_activity%'
+    ORDER BY 4,3
+  metrics:
+    - datname:
+        usage: "LABEL"
+        description: "Name of current database"
+    - schemaname:
+        usage: "LABEL"
+        description: "Name of the schema that this table is in"
+    - relname:
+        usage: "LABEL"
+        description: "Name of this table"
+    - runtime:
         usage: "GAUGE"
         description: "Estimated Time for autovacuum to run"
