@@ -379,19 +379,25 @@ pg_table_bloat:
 pg_autovacuum_runtime:
   query: |
     SELECT 
-      current_database() AS datname,
-      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 3) AS schemaname,
-      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 4) AS relname,
-      EXTRACT(EPOCH FROM statement_timestamp() - xact_start) AS av_runtime
+      psa.datname AS datname,
+      psut.schemaname AS schemaname,
+      psut.relname AS relname,
+      EXTRACT(EPOCH FROM statement_timestamp() - psa.xact_start) AS av_runtime
     FROM 
-      postgres_exporter.pg_stat_activity
+      postgres_exporter.pg_stat_activity psa
+    JOIN 
+      postgres_exporter.pg_stat_progress_vacuum pspv 
+      ON (psa.pid=pspv.pid)
+    JOIN 
+      pg_stat_user_tables psut 
+      ON (pspv.relid=psut.relid)
     WHERE 
-      lower(query) LIKE '%autovacuum%vacuum%' 
+      lower(psa.query) LIKE '%autovacuum%vacuum%' 
     AND 
-      lower(query) NOT LIKE '%wraparound%'
+      lower(psa.query) NOT LIKE '%wraparound%'
     AND
-      query NOT LIKE '%pg_stat_activity%'
-    ORDER BY 4,3
+      psa.query NOT LIKE '%pg_stat_activity%'
+    ORDER BY 3,2
   metrics:
     - datname:
         usage: "LABEL"
@@ -495,19 +501,25 @@ pg_slow:
 pg_autovacuum_prevent_wraparound_runtime:
   query: |
     SELECT 
-      current_database() AS datname,
-      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 3) AS schemaname,
-      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 4) AS relname,
-      EXTRACT(EPOCH FROM statement_timestamp() - xact_start) AS av_runtime
+      psa.datname AS datname,
+      psut.schemaname AS schemaname,
+      psut.relname AS relname,
+      EXTRACT(EPOCH FROM statement_timestamp() - psa.xact_start) AS av_runtime
     FROM 
-      postgres_exporter.pg_stat_activity
+      postgres_exporter.pg_stat_activity psa
+    JOIN 
+      postgres_exporter.pg_stat_progress_vacuum pspv 
+      ON (psa.pid=pspv.pid)
+    JOIN 
+      pg_stat_user_tables psut 
+      ON (pspv.relid=psut.relid)
     WHERE 
-      lower(query) LIKE '%autovacuum%vacuum%' 
+      lower(psa.query) LIKE '%autovacuum%vacuum%' 
     AND 
-      lower(query) LIKE '%wraparound%'
+      lower(psa.query) LIKE '%wraparound%'
     AND
-      query NOT LIKE '%pg_stat_activity%'
-    ORDER BY 4,3
+      psa.query NOT LIKE '%pg_stat_activity%'
+    ORDER BY 3,2
   metrics:
     - datname:
         usage: "LABEL"
@@ -525,19 +537,25 @@ pg_autovacuum_prevent_wraparound_runtime:
 pg_vacuum_runtime:
   query: |
     SELECT 
-      current_database() AS datname,
-      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 3) AS schemaname,
-      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 4) AS relname,
-      EXTRACT(EPOCH FROM statement_timestamp() - xact_start) AS av_runtime
+      psa.datname AS datname,
+      psut.schemaname AS schemaname,
+      psut.relname AS relname,
+      EXTRACT(EPOCH FROM statement_timestamp() - psa.xact_start) AS runtime
     FROM 
-      postgres_exporter.pg_stat_activity
+      postgres_exporter.pg_stat_activity psa
+    JOIN 
+      postgres_exporter.pg_stat_progress_vacuum pspv 
+      ON (psa.pid=pspv.pid)
+    JOIN 
+      pg_stat_user_tables psut 
+      ON (pspv.relid=psut.relid)
     WHERE 
-      lower(query) LIKE '%vacuum%' 
+      lower(psa.query) LIKE '%vacuum%' 
     AND 
-      lower(query) NOT LIKE '%autovacuum%'
+      lower(psa.query) NOT LIKE '%autovacuum%'
     AND
-      query NOT LIKE '%pg_stat_activity%'
-    ORDER BY 4,3
+      psa.query NOT LIKE '%pg_stat_activity%'
+    ORDER BY 3,2
   metrics:
     - datname:
         usage: "LABEL"
@@ -556,18 +574,16 @@ pg_analyze_runtime:
   query: |
     SELECT 
       current_database() AS datname,
-      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 3) AS schemaname,
-      SPLIT_PART(REGEXP_REPLACE(query, '(\w+\:\s)?(\w+\s){1,2}?(\w+)\.(\w+).*', '\3.\4', 'g'), '.', 4) AS relname,
-      EXTRACT(EPOCH FROM statement_timestamp() - xact_start) AS av_runtime
+      SPLIT_PART(unnest(REGEXP_MATCH(query, '[\w]+\.[\w]+')), '.', 1) AS schemaname,
+      SPLIT_PART(unnest(REGEXP_MATCH(query, '[\w]+\.[\w]+')), '.', 2) AS relname,
+      EXTRACT(EPOCH FROM statement_timestamp() - xact_start) AS runtime
     FROM 
-      postgres_exporter.pg_stat_activity
+      postgres_exporter.pg_stat_activity 
     WHERE 
-      lower(query) LIKE '%vacuum%' 
+      lower(name) LIKE '%analyze%' 
     AND 
-      lower(query) NOT LIKE '%autovacuum%'
-    AND
-      query NOT LIKE '%pg_stat_activity%'
-    ORDER BY 4,3
+      lower(name) NOT LIKE '%autovacuum%'
+    ORDER BY 3,2
   metrics:
     - datname:
         usage: "LABEL"
